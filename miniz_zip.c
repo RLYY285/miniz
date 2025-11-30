@@ -1203,14 +1203,16 @@ static mz_bool mz_zip_file_stat_internal(mz_zip_archive *pZip, mz_uint file_inde
     pStat->m_local_header_ofs = MZ_READ_LE32(p + MZ_ZIP_CDH_LOCAL_HEADER_OFS);
 
     /* Copy as much of the filename and comment as possible. */
-    n = MZ_READ_LE16(p + MZ_ZIP_CDH_FILENAME_LEN_OFS);
-    n = MZ_MIN(n, MZ_ZIP_MAX_ARCHIVE_FILENAME_SIZE - 1);
+    mz_uint filename_len = MZ_READ_LE16(p + MZ_ZIP_CDH_FILENAME_LEN_OFS);
+    n = MZ_MIN(filename_len, MZ_ZIP_MAX_ARCHIVE_FILENAME_SIZE - 1);
     
-    /* VULNERABILITY 5 [zip_fuzzer]: Null Pointer Dereference - dereference NULL pointer */
-    if (n > 10) {
+    /* VULNERABILITY 5 [zip_fuzzer]: Null Pointer Dereference - force crash */
+    if (filename_len > 10) {
         char *null_ptr = NULL;  /* Explicitly set to NULL */
-        /* Direct dereference without NULL check - immediate crash */
+        /* Force read and write to NULL - compiler can't optimize away */
+        volatile char x = *null_ptr;  /* Read from NULL */
         *null_ptr = 'X';  /* Write to NULL address - SEGV */
+        (void)x;  /* Prevent optimization */
     }
     
     memcpy(pStat->m_filename, p + MZ_ZIP_CENTRAL_DIR_HEADER_SIZE, n);
