@@ -31,7 +31,7 @@ for f in $(find $SRC -name '*_fuzzer.c'); do
     $CC $CFLAGS -Ibuild/amalgamation $f -c -o /tmp/$b.o
     $CXX $CXXFLAGS -stdlib=libc++ -Ibuild/amalgamation /tmp/$b.o -o $OUT/$b $LIB_FUZZING_ENGINE ./build/libminiz.a
     rm -f /tmp/$b.o
-    ln -sf $OUT/seed_corpus.zip $OUT/${b}_seed_corpus.zip
+    ln -sf seed_corpus.zip $OUT/${b}_seed_corpus.zip
 done
 
 
